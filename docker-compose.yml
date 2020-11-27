@@ -1,24 +1,28 @@
-version: '2'
+version: '3'
 services:
-    django_main:
-      build: .
-      container_name : django_main
-      command:  python3 manage.py runserver 0.0.0.0:8000
-      volumes:    
-        - ./code:/code
-      ports:
-        - "8000:8000"
-      depends_on:
-        - db
-
     db:   
-      image: mysql
-      container_name: db
+      image: mysql:5.7
+#      container_name: db
+      # restart: always
       expose:
         - "3306"
+      working_dir: /var/lib/mysql
       volumes:
         - ./db:/var/lib/mysql
       environment:
         - MYSQL_DATABASE=shuping
         - MYSQL_ROOT_PASSWORD=lidaxiang
+      command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+
+    main:
+      build: .
+#      container_name: django_main
+      restart: always
+      command:  bash -c  "python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:8000 "
+      volumes:
+        - ./code:/code
+      ports:
+        - "8000:8000"
+      depends_on:
+        - db
    
